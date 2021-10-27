@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: gitlab-redis
+  namespace: gitlab
+spec:
+  serviceName: gitlab-redis
+  replicas: 1
+  selector:
+    matchLabels:
+      name: gitlab-redis
+  template:
+    metadata:
+      labels:
+        name: gitlab-redis
+    spec:
+      containers:
+      - name: redis
+        image: sameersbn/redis:latest
+        ports:
+        - name: redis
+          containerPort: 6379
+        volumeMounts:
+        - mountPath: /var/lib/redis
+          name: data
+        livenessProbe:
+          exec:
+            command:
+            - redis-cli
+            - ping
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+        readinessProbe:
+          exec:
+            command:
+            - redis-cli
+            - ping
+          initialDelaySeconds: 5
+          timeoutSeconds: 1
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: redis-pvc

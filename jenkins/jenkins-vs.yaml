@@ -1,0 +1,20 @@
+apiVersion: k8s.nginx.org/v1
+kind: VirtualServer
+metadata:
+  name: jenkins
+  namespace: jenkins
+spec:
+  host: jenkins.sts.com
+  routes:
+  - action:
+      pass: jenkins
+    path: /
+  tls:
+    redirect:
+      code: 302
+      enable: true
+    secret: tls-secret
+  upstreams:
+  - name: jenkins
+    port: 8080
+    service: jenkins-service

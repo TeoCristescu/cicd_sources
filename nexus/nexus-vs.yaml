@@ -1,0 +1,67 @@
+apiVersion: k8s.nginx.org/v1
+kind: VirtualServer
+metadata:
+  name: nexus
+  namespace: nexus
+spec:
+  tls:
+    secret: nexus-secret
+    redirect:
+      enable: true
+      code: 302
+  host: nexus.sts.com
+  upstreams:
+  - name: nexus
+    service: nexus-service
+    port: 8081
+  routes:
+  - path: /
+    action:
+      pass: nexus
+
+---
+apiVersion: k8s.nginx.org/v1
+kind: VirtualServer
+metadata:
+  name: docker
+  namespace: nexus
+spec:
+  tls:
+    secret: nexus-secret
+    redirect:
+      enable: true
+      code: 302
+  host: docker.sts.com
+  upstreams:
+  - name: docker
+    service: docker-service
+    port: 8082
+  routes:
+  - path: /
+    action:
+      pass: docker
+
+---
+apiVersion: k8s.nginx.org/v1
+kind: VirtualServer
+metadata:
+  name: docker-push
+  namespace: nexus
+spec:
+  tls:
+    secret: nexus-secret
+    redirect:
+      enable: true
+      code: 302
+  host: docker-push.sts.com
+  upstreams:
+  - name: docker-push
+    service: docker-push-service
+    port: 8083
+  routes:
+  - path: /
+    action:
+      pass: docker-push
+    location-snippets: |
+        client_max_body_size 50G;
+
